@@ -10,14 +10,16 @@ ggplot(data, aes(x = `ModuLand community centrality`, y = `ModuLand bridgeness`)
   scale_y_log10() +
   geom_smooth(method='lm', formula= y ~ x)
 
+# Date hubs
 data %>%
   filter(`ModuLand bridgeness` > 1) %>%
   filter(`ModuLand community centrality` > 5000)
 
-
+# Party hub
 data %>%
   filter(`ModuLand bridgeness` < 0.3) %>%
   filter(`ModuLand community centrality` > 10000)
 
+# really unbridgey and not very connected - peripheral genes?
 data %>%
   filter(`ModuLand bridgeness` < 1e-05)
