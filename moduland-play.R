@@ -40,10 +40,7 @@ data <- read_csv(here("data", "BIOGRID-ORGANISM-Homo_sapiens-3.4.158.tab2.txt-0-
   mutate(second_group = if_else(condition = `ModuLand community centrality` < 700 & `ModuLand community centrality` > 200 & `ModuLand bridgeness` > 2,
                                 true = nodeID,
                                 false = "")) %>%
-  mutate(third_group = if_else(condition = nodeID == "HRAS",
-                                true = nodeID,
-                                false = "")) %>%
-  mutate(gene_of_interest = paste(first_group, second_group, third_group, sep="")) %>%
+  mutate(gene_of_interest = paste(first_group, second_group, sep="")) %>%
   mutate(gene_selected = if_else(condition = gene_of_interest != "",
                                  true = "selected",
                                  false = "")) %>%
@@ -113,3 +110,34 @@ phenotypes %>%
   distinct() %>%
   filter(HPO %in% colnames(important_gene_pheno)) %>%
   as.data.frame()
+  write_csv("important_hpo.csv")
+
+
+#### pathway analysis ----
+
+pathways <- read_delim(here("data", "BW network pathways.txt"), delim = "\t", comment = "#") %>%
+  mutate(p_value = exp(` -log(B-H p-value)`))
+
+  pathways$Molecules
+  
+pathways %>%
+  top_n(10) %>%
+  arrange(p_value) %>%
+  mutate(pathway = factor(`Ingenuity Canonical Pathways`, levels=`Ingenuity Canonical Pathways`)) %>%
+  ggplot(aes(x=pathway)) +
+  geom_bar(aes(y=p_value), stat="identity", fill=palette_5[4]) +
+  scale_y_log10() +
+  coord_flip() +
+  ylab("1 / BH Corrected P-value") +
+  xlab("Ingenuity Pathway")
+
+
+#### Network metics ----
+
+network_metrics <- read_csv(here("data", "network_metrics.csv")) 
+
+network_metrics %>%
+  filter(AverageShortestPathLength <= 3) %>% # 79
+  filter(Degree >= 4) %>%  ## 27
+  as.data.frame()  # together 16
+
